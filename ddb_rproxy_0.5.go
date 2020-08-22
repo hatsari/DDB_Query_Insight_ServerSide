@@ -73,7 +73,7 @@ func main() {
 	reverseProxy := &httputil.ReverseProxy{Director: director}
 	reverseProxy.ModifyResponse = func(res *http.Response) error {
 		err := tm.setResTotalMetric(res)
-		elapsedTime["endTime"] = time.Now()
+		//elapsedTime["endTime"] = time.Now()
 		return err
 	}
 	handler := handler{proxy: reverseProxy}
@@ -98,10 +98,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.proxy.ServeHTTP(w, r)
 
 	// log.Printf("total metric: %v", *tm)
-
     metrics.setMetrics(tm)
-
 	log.Printf("metrics: %v", *metrics)
+
 	err := sendToFirehose(metrics)
 	if err != nil {
 		log.Printf("firehose err: %v", err)
@@ -109,6 +108,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (metrics *Metrics) setMetrics(tm *TotalMetric) error{
+	elapsedTime["endTime"] = time.Now()
     // metrics.Date = tm.resheader["Date"].(time.Time)
     metrics.Date = elapsedTime["startTime"]
     metrics.Method = strings.Split(tm.reqheader["X-Amz-Target"][0], ".")[1]
@@ -184,7 +184,7 @@ func sendToFirehose(metrics *Metrics) error {
 	recordsInput := &firehose.PutRecordInput{}
 	recordsInput = recordsInput.SetDeliveryStreamName(streamName)
 
-	// metricMap
+	// metricMap for firehose to S3, not implemented
 	mMap := tm.parseMetricMap(metricMap)
 	log.Printf("metricMap: %v\n", mMap)
 
