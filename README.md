@@ -15,7 +15,7 @@ Using the DynamoDB Metric dashboard in AWS console, you can see various metrics,
 - anything which you want to know with http head/body information
 
 ## Architecture
-    ![ddb_query_insight_architecture](images/architecture.png)
+![ddb_query_insight_architecture](images/architecture.png)
 
 ## DDB Reverse Proxy(DDB rproxy)
 DDB Reverse Proxy(DDB rproxy) gathers http request header and body information, and response header information and it sends them to firehose. Also you can parse the DDB rproxy log data and utilize it by yourself without sending to firehose. I tried to make variables be adjustable as parameters. Therefore, you can input your own variables, not compiling the source code. As well, I created simple script(ddb_rproxy.sh) to start and stop easily.
