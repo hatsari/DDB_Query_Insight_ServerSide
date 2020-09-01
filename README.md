@@ -1,5 +1,5 @@
 # DDB_Query_Insight
-- Date: 2020.09.01
+- Date: 2020.09.02
 - Yongki Kim(kyongki@)
 
 ![ddb_query_insight](images/ddb_query_insight.png)
@@ -20,6 +20,10 @@ Using the DynamoDB Metric dashboard in AWS console, you can see various metrics,
 ## DDB Reverse Proxy(DDB rproxy)
 DDB Reverse Proxy(DDB rproxy) gathers http request header and body information, and response header information and it sends them to firehose. Also you can parse the DDB rproxy log data and utilize it by yourself without sending to firehose. I tried to make variables be adjustable as parameters. Therefore, you can input your own variables, not compiling the source code. As well, I created simple script(ddb_rproxy.sh) to start and stop easily.
 ### How to use DDB rproxy
+#### clone the git repository
+``` shell
+$ git clone https://github.com/hatsari/DDB_Query_Insight_ServerSide.git
+```
 #### run DDB rproxy
 
 ``` shell
@@ -41,9 +45,10 @@ arguments: --port --debug --region_name --stream_name
 --stream_name: kinesis firehose stream name
 ...
 DAEMON_OPTS example:
-1) ddbrproxy
-2) ddbrproxy --port=8000 --debug=true --region_name=ap-northeast-2 --stream_name=ddbhose --send_to_firehose=false
+1) --port=8000 --debug=true
+2) --port=8000 --debug=true --region_name=ap-northeast-2 --stream_name=ddbhose --send_to_firehose=false
 ```
+If you want not to integrate with firehose and ElasticSearch, set *--send_to_firehose=false* 
 
 All gathered information are stored log file in *logs* directory, so you can process it on your taste. below is the sample log data.
 
@@ -64,21 +69,136 @@ $ cat ddbrproxy.2020-08-31-28.log
 
 ## Integrating with Kinesis Firehose and ElasticSearch
 In order to monitor DDB transaction, analyzing log data is not enough. ElasticSearch and Kinesis firehose is good tool for ingesting and visualizing the data. With those two tools, you can make chars and dashboard easily on your purpose.
-### Creating ElasticSearch
-### Creating Firehose
-### Making DDB rproxy connect to firehose
-## Test
-1. clone git repository
-2. edit start script
-3. run ddb_rproxy
-4. run client
-5. check the log file
-6. check the retrieved logs in ElasticSearch
 
-### uploading DDB sample data
-## Performance
+### Creating ElasticSearch
+Follow the AWS document: https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-create-domain.html
+
+1. Go to https://aws.amazon.com, and then choose Sign In to the Console.
+2. Under *Analytics*, choose *Elasticsearch Service*.
+3. Choose *Create a new domain*.
+4. On the *Create Elasticsearch domain* page, choose *Development and testing*.
+5. For *Elasticsearch version*, choose the latest version and *Next*.
+6. Enter a name for the domain. __DDBES__ for the examples. 
+7. For *Data nodes*, choose the *c5.large.elasticsearch* instance type. Use the default value of 1 instance.
+8. For *Data nodes storage*, use the default values.
+9. For now, you can ignore the *Dedicated master nodes, UltraWarm data nodes, Snapshot configuration*, and *Optional Elasticsearch cluster settings* sections.
+10. Choose *Next*.
+11. For simplicity in this tutorial, we recommend a public access domain. For *Network configuration*, choose *Public access*.
+12. For *Fine-grained access control*, choose *Create master user*. Specify a username and password.
+13. For now, you can ignore *Amazon Cognito Authentication*.
+14. For *Access policy* choose *Allow open access to the domain*. In this tutorial, fine-grained access control handles authentication, not the domain access policy.
+15. Leave the encryption settings at their default values, and choose *Next*.
+16.  On the *Review* page, double-check your configuration and choose *Confirm*. New domains typically take 15-30 minutes to initialize, but can take longer depending on the configuration. After your domain initializes, make note of its endpoint.
+
+### Creating Firehose
+Refer to the AWS Blog: https://aws.amazon.com/blogs/big-data/ingest-streaming-data-into-amazon-elasticsearch-service-within-the-privacy-of-your-vpc-with-amazon-kinesis-data-firehose/#:~:text=Kinesis%20Data%20Firehose%20can%20now,data%20ingestion%20and%20delivery%20infrastructure.
+1. On the Kinesis Data Firehose console, under *Data Firehose*, choose *Create Delivery Stream*.
+2. Enter a name for your stream;__ddbhose__ ;this name will be used as the value of parameter in ddb_rproxy.sh, .
+3.  source, choose *Direct PUT or other sources*.
+4. Choose *Next*.
+5. For *Data transformation*, don't change default value, keep *Disabled* 
+6. For *Convert record format*, don't change default value, keep *Disabled* 
+7. Choose *Next*.
+8. Choose *Amazon Elasticsearch* Service as the destination for your delivery stream.
+9. For *Domain,*, choose __DDBES__ which you already created.
+10. For *Index*, enter __ddbindex__.
+11. For *S3 backup*, create new s3 bucket and choose it as *Backup S3 bucket*
+12. Choose *Next*, leaving other values unchanged.
+13. Don't change anything. Choose *Next*.
+14. Finally, *Review* and choose *Create delivery stream*
+### Uploading DDB sample data
+- for movie table, refer to here:
+  - creating table: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.Python.01.html
+  - loading data: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.Python.02.html
+- for ProductCatalog, Forum, Thread, Reply tables, refer to here:
+  - creating tables: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html
+  - loading data: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.LoadData.html
+
+### Making DDB rproxy connect to firehose
+- confirm ElasticSearch is running in AWS console
+- check the firehose name in AWS console
+- set parameters of *--send_to_firehose=true* and *--stream_name=ddbhose* in ddb_rproxy.sh
+``` shell
+$ head -n 15 ddb_rproxy.sh | grep DAEMON_OPTS
+DAEMON_OPTS="--send_to_firehose=true --stream_name=ddbhose"
+```
+### Creating client application
+It is necessary to replace the DDB endpoint to use ddb_rproxy. Default Dynamo DB endpoint is *dynamodb.ap-northeast-2.amazonaws.com*, and you have to change it to ddb_rproxy's ip:port after starting ddb_rproxy
+
+Here is the code snippet of *read_ddb_client.go*
+``` go
+// snippet of read client
+// const DDB_ENDPOINT = "dynamodb.ap-northeast-2.amazonaws.com"
+const DDB_ENDPOINT = "http://127.0.0.1:8000"
+
+func main() {
+    // Initialize a session in us-west-2 that the SDK will use to load
+    // credentials from the shared credentials file ~/.aws/credentials.
+    sess, err := session.NewSession(&aws.Config{
+        Region: aws.String("ap-northeast-2")},
+    )
+
+    // Create DynamoDB client
+    // svc := dynamodb.New(sess)
+    svc := dynamodb.New(sess, aws.NewConfig().WithEndpoint(DDB_ENDPOINT))
+```
+
+For more reliability, if you are in production environment, you have to put *health_check* function which can change the endpoint to default ddb endpoint if ddb_rproxy couldn't be accessible.
+
+I uploaded some clients program written in golang, but you can use any client program written in your favorate programming language. Those clients are fetched from here(https://github.com/awsdocs/aws-doc-sdk-examples/tree/master/go/example_code/dynamodb)
+
+``` go
+$ go build read_ddb_client.go
+```
+
+## Test
+### Run ddb_rproxy
+It would be best practice that running ddb_rproxy on the same server with ddb client because it can reduce the latency between proxy and client. Hence, let's run ddb_rproxy
+```shell
+$ ddb_rproxy.sh start 
+```
+### Run client
+``` shell
+$ cd ddb_clients
+$ for i in {1..10};do ./read_ddb_client ;echo $i;done
+```
+
+### Check the retrieved logs in ElasticSearch
+It will take 5 min(in default) that the retrieved logs come to ElasticSearch through firehose. After 5 min, you will see the stored data in kibana. Your kibana page can be seen on ElasticSearch dashboard in AWS console 
+![kibana_access](images/kibana_access.png)
+
+![stored_data](images/es_stored_data.png)
+
+Next, you have to create index pattern. Index patten can be created in *Management* menu. You have use the index name which you set when you create firehose. 
+![index_pattern](images/es_index_pattern.png)
+
+For more information, refer to this page(https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg.html)
+
+### Creating kibana chart
+To create the chart is very crucial to visualize your metric, but moreover, it is more important to decide which metric you want to see. In kibana, if you have enough metric, you can create your chart easily. There are many type of chart in kibana, so I will demonstrate one typical chart named *historical success/failure chart*.
+
+1. go to *Visualization* menu, and choose *Create visualizaton*.
+2. choose *vertical bar*
+3. select your index name in source menu
+4. on *Bucket* in right pane, click *Add*, and choose *X-axis*
+5. set date histogram like below, 
+  ![chart_x_axis](images/chart_x_axis.png)
+5. click *Add*, and choose *Split series*
+7. set response code, like below, 
+  ![chart_split](images/chart_split.png)
+8. *Update* and *Save*
+
+Here is the result chart. 
+![chart_split](images/chart_view.png)
+
+## Next Step
+- CDK script to build components automatically
+- Containerization to adapt in container environment
+- Performance Comparison between when using ddb rproxy and not using
+
 ## Conclusion
 My customer asked me how to find out which query failed frequently and how to figure it out, so I developed it, even though I am not a professional programmer and not an ElasticSearch expert. And this program is not evaluated in production environment, so please test it in your test environment before adopting it in production. Any feedback, question, and experience is welcome, I just hope that it is helpful to you.
+
 ## References
 - golang proxy and metric: https://www.sidneyw.com/go-reverse-proxy/ (authentication failed)
 - kinesis firehose go example: https://gist.github.com/coboshm/1c89bcc7bf2c9f9694e4984051474951

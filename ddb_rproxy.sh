@@ -4,7 +4,7 @@ set -e
 
 # Must be a valid filename
 NAME=ddbrproxy
-now=$(date +"%Y-%m-%d-%S")
+now=$(date +"%Y-%m-%d-%H%M%S")
 if [ ! -d logs ]; then
     mkdir logs
 fi
@@ -12,7 +12,8 @@ PIDFILE=logs/$NAME.pid
 LOGFILE=logs/$NAME.$now.log
 #This is the command to be run, give the full pathname
 PROG=ddb_rproxy
-DAEMON_OPTS="--port=8000 --debug=true --send_to_firehose=false"
+DAEMON_OPTS="--port=8000 --debug=true"
+### DAEMON_OPTS="--port=8000 --debug=true --region_name=ap-northeast-2 --stream_name=ddbhose --send_to_firehose=false"
 RETVAL=0
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin:./"
@@ -54,8 +55,8 @@ case "$1" in
       echo "--stream_name: kinesis firehose stream name"
       echo "..."
       echo "DAEMON_OPTS example:"
-      echo "1) $NAME"
-      echo "2) $NAME --port=8000 --debug=true --region_name="ap-northeast-2" --stream_name="ddbhose" --send_to_firehose=false"
+      echo "1) --port=8000 --debug=true"
+      echo "2) --port=8000 --debug=true --region_name=ap-northeast-2 --stream_name=ddbhose --send_to_firehose=false"
       ;;
 
   *)

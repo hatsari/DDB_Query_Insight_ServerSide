@@ -34,7 +34,7 @@ import (
 var port = flag.Int("port", 8000, "port")
 var debug_mode = flag.Bool("debug", false, "enabling debug mode")
 var region_name = flag.String("region_name","ap-northeast-2","AWS region name")
-var send_to_firehose = flag.Bool("send_to_firehose", false, "enabling to send to firehose")
+var send_to_firehose = flag.Bool("send_to_firehose", true, "enabling to send to firehose")
 var stream_name = flag.String("stream_name", "ddbhose", "aws firehose stream name")
 // if you set "including_response_body" be 'true', unexpected termination could be happen!!
 var including_response_body = false
