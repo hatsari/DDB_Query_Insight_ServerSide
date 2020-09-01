@@ -1,0 +1,9 @@
+#!/bin/sh
+./DynamoDBCreateItem
+./DynamoDBCreateTable
+./DynamoDBListTables
+#./DynamoDBLoadItems
+./DynamoDBReadItem
+./DynamoDBScanItems
+./DynamoDBUpdateItem
+./DynamoDBDeleteItem
