@@ -182,10 +182,10 @@ To create the chart is very crucial to visualize your metric, but moreover, it i
 3. select your index name in source menu
 4. on *Bucket* in right pane, click *Add*, and choose *X-axis*
 5. set date histogram like below, 
-  ![chart_x_axis](images/chart_x_axis.png)
+  ![chart_x_axis](images/chart_x_axis2.png)
 5. click *Add*, and choose *Split series*
 7. set response code, like below, 
-  ![chart_split](images/chart_split.png)
+  ![chart_split](images/chart_split2.png)
 8. *Update* and *Save*
 
 Here is the result chart. 
