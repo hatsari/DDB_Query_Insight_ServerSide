@@ -5,7 +5,7 @@
 ![ddb_query_insight](images/ddb_query_insight.png)
 
 ## Objectives
-DDB Query Insight is aimed to show Dynamodb user more insight providing with the chart of historical DDB query count, failed query and elapsed time. I developed http reverse proxy to gather http header and body, and push them to kinesis firehose, then firehose sends those data to ElasticSearch to store and visualize the metrics. It will help DDB user understand current and historical DDB query processing status.
+DDB Query Insight is aimed to show Dynamodb user more insight providing with the chart of historical DDB query count, failed query and elapsed time. I developed http reverse proxy to gather http header and body, and push them to kinesis firehose, then firehose sends those data to ElasticSearch to store and visualize the metrics. It will help DDB user understand current and historical DDB query processing status. And It is easy to use, just replacing the DDB Endpoint from default to ddb rproxy is enough to apply it. 
 
 ### Providing Features
 Using the DynamoDB Metric dashboard in AWS console, you can see various metrics, such as read/write requests, throttled read/write events, and GET/PUT/SCAN/Query latency. But sometimes DDB user would like to figure out more specific metrics. Below are the typical metrics which DDB Query Insight can show.
@@ -68,10 +68,17 @@ In order to monitor DDB transaction, analyzing log data is not enough. ElasticSe
 ### Creating Firehose
 ### Making DDB rproxy connect to firehose
 ## Test
+1. clone git repository
+2. edit start script
+3. run ddb_rproxy
+4. run client
+5. check the log file
+6. check the retrieved logs in ElasticSearch
+
 ### uploading DDB sample data
 ## Performance
 ## Conclusion
-my customer asked me how to find out which query failed frequently and how to figure it out, so I developed it, even though I am not professional programmer and not ElasticSearch expert. And this program is not evaluated in production environment, so please test it in your test environment before adopting it in production. Any feedback, question, and experience is welcome, I just hope that it is helpful to you.
+My customer asked me how to find out which query failed frequently and how to figure it out, so I developed it, even though I am not a professional programmer and not an ElasticSearch expert. And this program is not evaluated in production environment, so please test it in your test environment before adopting it in production. Any feedback, question, and experience is welcome, I just hope that it is helpful to you.
 ## References
 - golang proxy and metric: https://www.sidneyw.com/go-reverse-proxy/ (authentication failed)
 - kinesis firehose go example: https://gist.github.com/coboshm/1c89bcc7bf2c9f9694e4984051474951
