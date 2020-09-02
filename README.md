@@ -66,6 +66,11 @@ $ cat ddbrproxy.2020-08-31-28.log
 	"ResponseCode": 200
 }
 ```
+#### compile ddb_rproxy_[version].go
+You can modify the source code of ddb_rproxy_[version].go_ as you wish, when you changed it, compile the code with below command.
+``` shell
+$ go build -o ddb_rproxy ddb_rproxy_[version].go
+```
 
 ## Integrating with Kinesis Firehose and ElasticSearch
 In order to monitor DDB transaction, analyzing log data is not enough. ElasticSearch and Kinesis firehose is good tool for ingesting and visualizing the data. With those two tools, you can make chars and dashboard easily on your purpose.
