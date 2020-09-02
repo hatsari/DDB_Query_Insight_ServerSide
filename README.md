@@ -221,14 +221,19 @@ Result is here.
 
 ### Performance Result
 As you see the result of each command, I executed the same command 10 times, and get the average time.
-- without proxy: 49 milliseconds
-- with proxy: 35 milliseconds
+
+- average elapsed time when 10 times execution:
+  - without proxy: 49 milliseconds
+  - with proxy: 35 milliseconds
+
+- average elapsed time when 100 times execution:
+  - without proxy: 46 milliseconds
+  - with proxy: 26 milliseconds
 
 At first, I thought that using proxy would degrade performance and hoped the smaller increasing time. However using the proxy showed better performance, I don't know the reason, maybe golang's *ReverseProxy* module seems to have caching feature with same request.
 ## Next Step
 - CDK script to build components automatically
 - Containerization to adapt in container environment
-
 
 ## Summary
 My customer asked me how to find out which query failed frequently and how to figure it out, so I developed it, even though I am not a professional programmer and not an ElasticSearch expert. And this program is not evaluated in production environment, so please test it in your test environment before adopting it in production. Any feedback, question, and experience is welcome, I just hope that it is helpful to you.
