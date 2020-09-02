@@ -222,11 +222,11 @@ Result is here.
 ### Performance Result
 As you see the result of each command, I executed the same command 10 times, and get the average time.
 
-- average elapsed time when 10 times execution:
+- average response time when 10 times execution:
   - without proxy: 49 milliseconds
   - with proxy: 35 milliseconds
 
-- average elapsed time when 100 times execution:
+- average response time when 100 times execution:
   - without proxy: 46 milliseconds
   - with proxy: 26 milliseconds
 
