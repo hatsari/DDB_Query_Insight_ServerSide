@@ -21,10 +21,13 @@
    specific language governing permissions and limitations under the License.
 */
 
+
 package main
 
 import (
 	"fmt"
+    "time"
+    "flag"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -45,17 +48,25 @@ type Item struct {
 }
 
 // const DDB_ENDPOINT = "dynamodb.ap-northeast-2.amazonaws.com"
-const DDB_ENDPOINT = "http://127.0.0.1:8000"
+var DDB_ENDPOINT string // "http://127.0.0.1:8000"
+var elapsedTime = map[string]time.Time{}
+var use_proxy = flag.Bool("use_proxy", true, "using proxy")
 
 func main() {
 	// Initialize a session in us-west-2 that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials.
+	elapsedTime["startTime"] = time.Now()
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-northeast-2")},
 	)
 
 	// Create DynamoDB client
 	// svc := dynamodb.New(sess)
+    if *use_proxy {
+        DDB_ENDPOINT = "http://127.0.0.1:8000"
+    } else {
+        DDB_ENDPOINT = "dynamodb.ap-northeast-2.amazonaws.com"
+    }
 	svc := dynamodb.New(sess, aws.NewConfig().WithEndpoint(DDB_ENDPOINT))
 
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
@@ -93,4 +104,8 @@ func main() {
 	fmt.Println("Title: ", item.Title)
 	fmt.Println("Plot:  ", item.Info.Plot)
 	fmt.Println("Rating:", item.Info.Rating)
+
+    elapsedTime["endTime"] = time.Now()
+    etime := elapsedTime["endTime"].Sub(elapsedTime["startTime"]).Milliseconds()  //unit: millisecond
+	fmt.Println("etime: ", etime)
 }

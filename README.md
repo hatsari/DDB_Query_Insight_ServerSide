@@ -5,7 +5,7 @@
 ![ddb_query_insight](images/ddb_query_insight.png)
 
 ## Objectives
-DDB Query Insight is aimed to show Dynamodb user more insight providing with the chart of historical DDB query count, failed query and elapsed time. I developed http reverse proxy to gather http header and body, and push them to kinesis firehose, then firehose sends those data to ElasticSearch to store and visualize the metrics. It will help DDB user understand current and historical DDB query processing status. And It is easy to use, just replacing the DDB Endpoint from default to ddb rproxy is enough to apply it. 
+DDB Query Insight is aimed to show Dynamodb user more insight providing with the chart of historical DDB query count, failed query and elapsed time. I developed http reverse proxy to gather http header and body, and push them to kinesis firehose, then firehose sends those data to ElasticSearch to store and visualize the metrics. It will help DDB user understand current and historical DDB query processing status. And It is easy to use, just replacing the DDB Endpoint from default to ddb rproxy is enough to apply it.
 
 ### Providing Features
 Using the DynamoDB Metric dashboard in AWS console, you can see various metrics, such as read/write requests, throttled read/write events, and GET/PUT/SCAN/Query latency. But sometimes DDB user would like to figure out more specific metrics. Below are the typical metrics which DDB Query Insight can show.
@@ -48,7 +48,7 @@ DAEMON_OPTS example:
 1) --port=8000 --debug=true
 2) --port=8000 --debug=true --region_name=ap-northeast-2 --stream_name=ddbhose --send_to_firehose=false
 ```
-If you want not to integrate with firehose and ElasticSearch, set *--send_to_firehose=false* 
+If you want not to integrate with firehose and ElasticSearch, set *--send_to_firehose=false*
 
 All gathered information are stored log file in *logs* directory, so you can process it on your taste. below is the sample log data.
 
@@ -83,7 +83,7 @@ Follow the AWS document: https://docs.aws.amazon.com/elasticsearch-service/lates
 3. Choose *Create a new domain*.
 4. On the *Create Elasticsearch domain* page, choose *Development and testing*.
 5. For *Elasticsearch version*, choose the latest version and *Next*.
-6. Enter a name for the domain. __DDBES__ for the examples. 
+6. Enter a name for the domain. __DDBES__ for the examples.
 7. For *Data nodes*, choose the *c5.large.elasticsearch* instance type. Use the default value of 1 instance.
 8. For *Data nodes storage*, use the default values.
 9. For now, you can ignore the *Dedicated master nodes, UltraWarm data nodes, Snapshot configuration*, and *Optional Elasticsearch cluster settings* sections.
@@ -101,8 +101,8 @@ Refer to the AWS Blog: https://aws.amazon.com/blogs/big-data/ingest-streaming-da
 2. Enter a name for your stream;__ddbhose__ ;this name will be used as the value of parameter in ddb_rproxy.sh, .
 3.  source, choose *Direct PUT or other sources*.
 4. Choose *Next*.
-5. For *Data transformation*, don't change default value, keep *Disabled* 
-6. For *Convert record format*, don't change default value, keep *Disabled* 
+5. For *Data transformation*, don't change default value, keep *Disabled*
+6. For *Convert record format*, don't change default value, keep *Disabled*
 7. Choose *Next*.
 8. Choose *Amazon Elasticsearch* Service as the destination for your delivery stream.
 9. For *Domain,*, choose __DDBES__ which you already created.
@@ -160,7 +160,7 @@ $ go build read_ddb_client.go
 ### Run ddb_rproxy
 It would be best practice that running ddb_rproxy on the same server with ddb client because it can reduce the latency between proxy and client. Hence, let's run ddb_rproxy
 ```shell
-$ ddb_rproxy.sh start 
+$ ddb_rproxy.sh start
 ```
 ### Run client
 ``` shell
@@ -169,12 +169,12 @@ $ for i in {1..10};do ./read_ddb_client ;echo $i;done
 ```
 
 ### Check the retrieved logs in ElasticSearch
-It will take 5 min(in default) that the retrieved logs come to ElasticSearch through firehose. After 5 min, you will see the stored data in kibana. Your kibana page can be seen on ElasticSearch dashboard in AWS console 
+It will take 5 min(in default) that the retrieved logs come to ElasticSearch through firehose. After 5 min, you will see the stored data in kibana. Your kibana page can be seen on ElasticSearch dashboard in AWS console
 ![kibana_access](images/kibana_access.png)
 
 ![stored_data](images/es_stored_data.png)
 
-Next, you have to create index pattern. Index patten can be created in *Management* menu. You have use the index name which you set when you create firehose. 
+Next, you have to create index pattern. Index patten can be created in *Management* menu. You have use the index name which you set when you create firehose.
 ![index_pattern](images/es_index_pattern.png)
 
 For more information, refer to this page(https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg.html)
@@ -186,15 +186,38 @@ To create the chart is very crucial to visualize your metric, but moreover, it i
 2. choose *vertical bar*
 3. select your index name in source menu
 4. on *Bucket* in right pane, click *Add*, and choose *X-axis*
-5. set date histogram like below, 
+5. set date histogram like below,
   ![chart_x_axis](images/chart_x_axis2.png)
 5. click *Add*, and choose *Split series*
-7. set response code, like below, 
+7. set response code, like below,
   ![chart_split](images/chart_split2.png)
 8. *Update* and *Save*
 
-Here is the result chart. 
+Here is the result chart.
 ![chart_split](images/chart_view.png)
+
+## Performance Comparison
+I performed the performance test to compare the elapsed time between when using ddb rproxy and not using it. Surprisingly the result was out of my expectation. It showed better performance when using ddb rproxy.
+
+client program(read_ddb_client_etime) is to get the information of book from *Movies* table. Also it prints *ddb_endpoint* and *elapsed_time* in millisecond unit.
+
+![read_ddb_client](images/read_ddb.png)
+
+### Elapsed time when connecting to ddb_endpoint directly
+Executed command is here.
+``` shell
+$ for i in {1..10};do ./read_ddb_client_etime --use_proxy=false | grep -B1 etime;done
+```
+Result is here.
+![performance](images/noproxy_result.png)
+
+### Elapsed time when connecting through ddb rproxy
+Executed command is here.
+``` shell
+$ for i in {1..10};do ./read_ddb_client_etime --use_proxy=true | grep -B1 etime;done
+```
+Result is here.
+![performance](images/proxy_result.png)
 
 ## Next Step
 - CDK script to build components automatically
