@@ -29,7 +29,7 @@ $ git clone https://github.com/hatsari/DDB_Query_Insight_ServerSide.git
 ``` shell
 $ ddb_rproxy.sh start
 $ ps aux | grep ddb_rproxy # check whether ddb_rproxy is listed
-$ netstat -tnl             # check whether ddb_rproxy port is opened
+$ netstat -tnlp             # check whether ddb_rproxy port is opened
 ```
 
 If you want to change the parameter, edit *DAEMON_OPTS* variable in the *ddb_rproxy.sh*. Available parameters are show with *help* parameter.
