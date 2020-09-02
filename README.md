@@ -219,12 +219,18 @@ $ for i in {1..10};do ./read_ddb_client_etime --use_proxy=true | grep -B1 etime;
 Result is here.
 ![performance](images/proxy_result.png)
 
+### Performance Result
+As you see the result of each command, I executed the same command 10 times, and get the average time.
+- without proxy: 49 milliseconds
+- with proxy: 35 milliseconds
+
+At first, I thought that using proxy would degrade performance and hoped the smaller increasing time. However using the proxy showed better performance, I don't know the reason, maybe golang's *ReverseProxy* module seems to have caching feature with same request.
 ## Next Step
 - CDK script to build components automatically
 - Containerization to adapt in container environment
-- Performance Comparison between when using ddb rproxy and not using
 
-## Conclusion
+
+## Summary
 My customer asked me how to find out which query failed frequently and how to figure it out, so I developed it, even though I am not a professional programmer and not an ElasticSearch expert. And this program is not evaluated in production environment, so please test it in your test environment before adopting it in production. Any feedback, question, and experience is welcome, I just hope that it is helpful to you.
 
 ## References
