@@ -2,7 +2,7 @@
 - Date: 2020.09.02
 - Yongki Kim(kyongki@)
 - ChangeLogs
-  - 2020.09.03: Adjusting performance result
+  - 2020.09.03: Adjusted performance result
 
 ----
 ![ddb_query_insight](images/ddb_query_insight.png)
