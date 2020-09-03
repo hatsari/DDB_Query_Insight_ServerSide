@@ -1,6 +1,8 @@
 # DDB_Query_Insight
 - Date: 2020.09.02
 - Yongki Kim(kyongki@)
+- ChangeLogs
+  - 2020.09.03: Adjusting performance result
 
 ![ddb_query_insight](images/ddb_query_insight.png)
 
@@ -197,40 +199,62 @@ Here is the result chart.
 ![chart_split](images/chart_view.png)
 
 ## Performance Comparison
-I performed the performance test to compare the elapsed time between when using ddb rproxy and not using it. Surprisingly the result was out of my expectation. It showed better performance when using ddb rproxy.
+I performed the performance test to compare the response time between when using ddb rproxy and access DDB Directly via HTTPS(443) and accessing DDB Directly via HTTP(80).
+
+``` shell
+# 1st case
+DDB_ENDPOINT = "https://dynamodb.ap-northeast-2.amazonaws.com:443"
+# 2nd case
+DDB_ENDPOINT = "http://dynamodb.ap-northeast-2.amazonaws.com:80"
+# 3rd case
+DDB_ENDPOINT = "http://127.0.0.1:8000"
+```
 
 client program(read_ddb_client_etime) is to get the information of book from *Movies* table. Also it prints *ddb_endpoint* and *elapsed_time* in millisecond unit.
 
 ![read_ddb_client](images/read_ddb.png)
 
-### Elapsed time when connecting to ddb_endpoint directly
+### 1st case: Response time when connecting to ddb_endpoint directly via HTTPS
 Executed command is here.
 ``` shell
+DDB_ENDPOINT = "https://dynamodb.ap-northeast-2.amazonaws.com:443"
 $ for i in {1..10};do ./read_ddb_client_etime --use_proxy=false | grep -B1 etime;done
 ```
 Result is here.
 ![performance](images/noproxy_result.png)
 
-### Elapsed time when connecting through ddb rproxy
+### 2st case: Response time when connecting to ddb_endpoint directly via HTTP
+``` shell
+DDB_ENDPOINT = "http://dynamodb.ap-northeast-2.amazonaws.com:80"
+$ for i in {1..10};do ./read_ddb_client_etime --use_proxy=false | grep -B1 etime;done
+```
+Result is here.
+![performance](images/noproxy80_result.png)
+
+### 3rd case: Response time when connecting through ddb rproxy
 Executed command is here.
 ``` shell
+DDB_ENDPOINT = "http://127.0.0.1:8000"
 $ for i in {1..10};do ./read_ddb_client_etime --use_proxy=true | grep -B1 etime;done
 ```
 Result is here.
 ![performance](images/proxy_result.png)
 
 ### Performance Result
-As you see the result of each command, I executed the same command 10 times, and get the average time.
+As you see the result of each command, I executed the same command 10 times, and get the average time. Also for more accuracy, I performed 100 times command. Result is here:
 
 - average response time when 10 times execution:
-  - without proxy: 49 milliseconds
+  - without proxy, HTTPS: 49 milliseconds
+  - without proxy, HTTP: 11 milliseconds
   - with proxy: 35 milliseconds
 
 - average response time when 100 times execution:
-  - without proxy: 46 milliseconds
+  - without proxy: HTTPS: 46 milliseconds
+  - without proxy, HTTP: 13 milliseconds
   - with proxy: 26 milliseconds
 
-At first, I thought that using proxy would degrade performance and hoped the smaller increasing time. However using the proxy showed better performance, I don't know the reason, maybe golang's *ReverseProxy* module seems to have caching feature with same request.
+Dynamo DB's default connection is HTTPS(TLS Communication), it cost about 20mill sec comparing not to use it. And when using ddb_rproxy, it took more 13 mill comparing to HTTP connection. 10 mill's overhead is not bad, I think.
+
 ## Next Step
 - CDK script to build components automatically
 - Containerization to adapt in container environment
@@ -250,3 +274,5 @@ My customer asked me how to find out which query failed frequently and how to fi
 - ecs replacing lambda: https://www.gravitywell.co.uk/insights/using-ecs-tasks-on-aws-fargate-to-replace-lambda-functions/
 - envoy for dynamodb filter: https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/dynamodb_filter#config-http-filters-dynamo
 - map string interface: https://bitfieldconsulting.com/golang/map-string-interface
+- cdk example for ES: https://github.com/aws-samples/aws-cdk-managed-elkk
+- cd examples: https://github.com/aws-samples/aws-cdk-examples
