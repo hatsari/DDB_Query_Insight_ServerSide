@@ -246,7 +246,7 @@ As you see the result of each command, I executed the same command 10 times, and
 
 - average response time when 10 times execution:
   - without proxy, HTTPS: 49 milliseconds
-  - without proxy, HTTP: 11 milliseconds
+  - without proxy, HTTP: 17 milliseconds
   - with proxy: 35 milliseconds
 
 - average response time when 100 times execution:
