@@ -4,6 +4,8 @@
 - ChangeLogs
   - 2020.09.03: Adjusting performance result
 
+=====
+
 ![ddb_query_insight](images/ddb_query_insight.png)
 
 ## Objectives
