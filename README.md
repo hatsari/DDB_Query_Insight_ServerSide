@@ -2,7 +2,9 @@
 - Date: 2020.09.02
 - Yongki Kim(kyongki@)
 - ChangeLogs
+  - 2020.09.10: adding cdk sources for elasticsearch, firehose
   - 2020.09.03: Adjusted performance result
+
 
 ----
 ![ddb_query_insight](images/ddb_query_insight.png)
@@ -78,6 +80,19 @@ $ go build -o ddb_rproxy ddb_rproxy_[version].go
 ## Integrating with Kinesis Firehose and ElasticSearch
 In order to monitor DDB transaction, analyzing log data is not enough. ElasticSearch and Kinesis firehose is good tool for ingesting and visualizing the data. With those two tools, you can make chars and dashboard easily on your purpose.
 
+### Automating deployment of ElasticSearch & Kinesis Firehose 
+I added some cdk sources here to make it easy to deploy elasticsearch & firehose. There are 3 stacks which are *ddbqi-es*, *ddbqi-iam*, *ddbqi-firehose*. 
+
+In order to connect to *kibana webconsole* from your laptop, you have to change *ES_CLIENT_IP* variable in *cdk/helper/constants.py*. You can find out your ip address from here(http://www.myipaddress.com/show-my-ip-address/). 
+
+``` shell
+$ cd cdk
+$ pip install -r requirements.txt
+$ sed -i -e 's/127.0.0.1/[your_own_ip]/' helper/constants.py
+$ cdk deploy ddbqi-es
+$ cdk deploy ddbqi-iam
+$ cdk deploy ddbqi-firehose
+```
 ### Creating ElasticSearch
 Follow the AWS document: https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-create-domain.html
 
@@ -257,7 +272,7 @@ As you see the result of each command, I executed the same command 10 times, and
 Dynamo DB's default connection is HTTPS(TLS Communication), it cost about 20mill sec comparing not to use it. And when using ddb_rproxy, it took more 13 mill comparing to HTTP connection. 10 mill's overhead is not bad, I think.
 
 ## Next Step
-- CDK script to build components automatically
+- CDK script to build components automatically  [done, 2020.09.10]
 - Containerization to adapt in container environment
 
 ## Summary
