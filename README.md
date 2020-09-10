@@ -81,7 +81,7 @@ $ go build -o ddb_rproxy ddb_rproxy_[version].go
 In order to monitor DDB transaction, analyzing log data is not enough. ElasticSearch and Kinesis firehose is good tool for ingesting and visualizing the data. With those two tools, you can make chars and dashboard easily on your purpose.
 
 ### Automating deployment of ElasticSearch & Kinesis Firehose 
-I added some cdk sources here to make it easy to deploy elasticsearch & firehose. There are 3 stacks which are *ddbqi-es*, *ddbqi-iam*, *ddbqi-firehose*. 
+I added some cdk sources[here](./cdk/app.py) here to make it easy to deploy elasticsearch & firehose. There are 3 stacks which are *ddbqi-es*, *ddbqi-iam*, *ddbqi-firehose*. 
 
 In order to connect to *kibana webconsole* from your laptop, you have to change *ES_CLIENT_IP* variable in *cdk/helper/constants.py*. You can find out your ip address from here(http://www.myipaddress.com/show-my-ip-address/). 
 
